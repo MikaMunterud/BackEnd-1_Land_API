@@ -5,7 +5,12 @@ const { users, countries } = require("../database.js");
 const joi = require("joi");
 const cookieParser = require("cookie-parser");
 server.use(express.json());
-server.use(cors());
+server.use(
+  cors({
+    origin: "http://localhost:3002",
+    credentials: true,
+  })
+);
 server.use(cookieParser());
 
 server.get("/", (req, res) => {
@@ -13,19 +18,22 @@ server.get("/", (req, res) => {
   const query = req.query;
   const body = req.body;
 
-  if (query || body) {
+  const queryKeys = Object.keys(query);
+  const bodyKeys = Object.keys(body);
+
+  if (queryKeys.length > 0 || bodyKeys.length > 0) {
     res.status(406).send("Please do not send in data");
     return;
   }
   // All countries are sent
-  res.send(countries);
+  res.json(countries);
 });
 
 server.post("/getCountry", (req, res) => {
   const validation = validateCountryName(req.body);
 
-  if (validateCountry.error) {
-    res.status(400).send(validatedUser.error.details[0].message);
+  if (validation.error) {
+    res.status(400).send(validation.error.details[0].message);
     return;
   }
 
@@ -61,9 +69,9 @@ server.post("/login", (req, res) => {
   }
 
   res.cookie("serverCookie", "loggedInUser", {
-    maxAge: 360000,
+    maxAge: 120000,
     sameSite: "none",
-    // secure: true,
+    secure: true,
     httpOnly: true,
   });
 
@@ -79,8 +87,8 @@ server.use(checkCookie);
 server.post("/addCountry", (req, res) => {
   const validation = validateCountry(req.body);
 
-  if (validateCountry.error) {
-    res.status(400).send(validatedUser.error.details[0].message);
+  if (validation.error) {
+    res.status(400).send(validation.error.details[0].message);
     return;
   }
 
