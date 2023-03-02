@@ -17,7 +17,7 @@ server.get("/", (req, res) => {
     res.status(406).send("Please do not send in data");
     return;
   }
-
+  // All countries are sent
   res.send(countries);
 });
 
